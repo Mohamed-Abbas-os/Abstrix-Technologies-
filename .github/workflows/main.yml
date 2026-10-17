@@ -1,0 +1,19 @@
+name: Deploy Abstrix Technologies
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK"
