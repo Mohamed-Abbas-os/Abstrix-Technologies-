@@ -1,4 +1,4 @@
-name: Deploy Abstrix Technologies
+name: Deploy Abstrix Technologies Website to GitHub Pages
 
 on:
   push:
@@ -6,24 +6,35 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Render Deployment
-        env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-        run: |
-          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
-            echo "ERROR: RENDER_DEPLOY_HOOK secret is missing."
-            exit 1
-          fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          if [[ "$RENDER_DEPLOY_HOOK" != https://* ]]; then
-            echo "ERROR: The Render Deploy Hook URL is invalid."
-            exit 1
-          fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-          curl --fail-with-body --silent --show-error \
-            --request POST "$RENDER_DEPLOY_HOOK"
+      - name: Upload website files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
